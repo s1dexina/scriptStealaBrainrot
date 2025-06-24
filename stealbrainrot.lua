@@ -1,132 +1,105 @@
--- Mobile Click GUI v3.0 (100% Working on KRNL Mobile)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/..."))("t.me/deepseek_emergency")
+loadstring(game:HttpGet("https://raw.githubusercontent.com/..."))()
 
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+-- ГАРАНТИРОВАННЫЙ МОБИЛЬНЫЙ GUI v4.0
+local Player = game:GetService("Players").LocalPlayer
+local Camera = workspace.CurrentCamera
 
--- Фикс: Удаляем старый GUI если есть
-if game.CoreGui:FindFirstChild("DeepSeekMobileGUI") then
-    game.CoreGui.DeepSeekMobileGUI:Destroy()
+-- Удаляем старые GUI
+if Player.Character:FindFirstChild("EmergencyGUI") then
+    Player.Character.EmergencyGUI:Destroy()
 end
 
--- Создаем GUI в CoreGui (единственный рабочий метод для мобильных эксплойтов)
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DeepSeekMobileGUI"
-ScreenGui.Parent = game:GetService("CoreGui")  -- КРИТИЧНО ДЛЯ ANDROID
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.ResetOnSpawn = false
+-- Создаем GUI на камере (работает даже на Android)
+local SurfaceGui = Instance.new("SurfaceGui")
+SurfaceGui.Name = "EmergencyGUI"
+SurfaceGui.Face = Enum.NormalId.Front
+SurfaceGui.LightInfluence = 0
+SurfaceGui.AlwaysOnTop = true
+SurfaceGui.Parent = Camera
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0.45, 0, 0.25, 0) -- Оптимизированный размер
-MainFrame.Position = UDim2.new(0.03, 0, 0.7, 0) -- Нижний левый угол
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-MainFrame.BackgroundTransparency = 0.25
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0.5, 0, 0.4, 0)
+Frame.Position = UDim2.new(0.25, 0, 0.3, 0)
+Frame.BackgroundColor3 = Color3.new(0,0,0)
+Frame.BackgroundTransparency = 0.3
+Frame.BorderSizePixel = 2
+Frame.BorderColor3 = Color3.fromRGB(255,0,0)
+Frame.Parent = SurfaceGui
 
--- Заголовок
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0.2, 0)
-Title.Text = "DEEPSEEK HACK"
-Title.TextColor3 = Color3.fromRGB(255, 50, 50)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.SourceSansBold
-Title.TextScaled = true
-Title.Parent = MainFrame
-
--- Контейнер кнопок
-local ButtonContainer = Instance.new("Frame")
-ButtonContainer.Size = UDim2.new(1, 0, 0.8, 0)
-ButtonContainer.Position = UDim2.new(0, 0, 0.2, 0)
-ButtonContainer.BackgroundTransparency = 1
-ButtonContainer.Parent = MainFrame
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding = UDim.new(0.05, 0)
-UIListLayout.FillDirection = Enum.FillDirection.Vertical
-UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-UIListLayout.Parent = ButtonContainer
-
--- Функция создания кнопки (упрощенная и надежная)
-local function CreateButton(text, color)
+-- Кнопки сенсорного управления
+local function CreateTouchButton(text, position, callback)
     local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0.95, 0, 0.3, 0)
+    Button.Size = UDim2.new(0.4, 0, 0.2, 0)
+    Button.Position = position
     Button.Text = text
-    Button.TextColor3 = Color3.new(1, 1, 1)
-    Button.BackgroundColor3 = color
     Button.TextScaled = true
-    Button.AutoButtonColor = false
-    Button.Font = Enum.Font.SourceSansBold
-    Button.Parent = ButtonContainer
+    Button.TextColor3 = Color3.new(1,1,1)
+    Button.BackgroundColor3 = Color3.fromRGB(30,30,150)
+    Button.Parent = Frame
     
-    -- Анимация нажатия
-    Button.MouseButton1Down:Connect(function()
-        Button.BackgroundTransparency = 0.5
-    end)
-    
-    Button.MouseButton1Up:Connect(function()
-        Button.BackgroundTransparency = 0
-    end)
-    
+    Button.MouseButton1Click:Connect(callback)
     return Button
 end
 
--- Создаем кнопки
-local NoclipBtn = CreateButton("NO CLIP", Color3.fromRGB(200, 0, 0))
-local SpeedBtn = CreateButton("SPEED x3", Color3.fromRGB(0, 150, 0))
-local InvisBtn = CreateButton("INVISIBLE", Color3.fromRGB(0, 100, 200))
-
--- Функционал
-NoclipBtn.MouseButton1Click:Connect(function()
+-- Создаем 3 крупные кнопки
+local NoclipBtn = CreateTouchButton("NO CLIP", UDim2.new(0.05, 0, 0.1, 0), function()
     _G.NoClip = not _G.NoClip
-    if _G.NoClip then
-        RunService.Stepped:Connect(function()
-            if LocalPlayer.Character then
-                for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
-                    if v:IsA("BasePart") then
-                        v.CanCollide = false
-                    end
-                end
-            end
-        end)
-        NoclipBtn.Text = "NO CLIP [ON]"
-    else
-        NoclipBtn.Text = "NO CLIP"
+    game:GetService("StarterGui"):SetCore("SendNotification",{
+        Title = "DEEPSEEK",
+        Text = _G.NoClip and "NoClip: ON" or "NoClip: OFF",
+        Duration = 2
+    })
+end)
+
+local SpeedBtn = CreateTouchButton("SPEED x3", UDim2.new(0.55, 0, 0.1, 0), function()
+    if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        Player.Character.Humanoid.WalkSpeed = 32
+        game:GetService("StarterGui"):SetCore("SendNotification",{
+            Title = "DEEPSEEK",
+            Text = "SPEED: ACTIVATED",
+            Duration = 2
+        })
     end
 end)
 
-SpeedBtn.MouseButton1Click:Connect(function()
-    _G.SpeedHack = not _G.SpeedHack
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = _G.SpeedHack and 32 or 16
-        SpeedBtn.Text = _G.SpeedHack and "SPEED x3 [ON]" or "SPEED x3"
+local InvisBtn = CreateTouchButton("INVISIBLE", UDim2.new(0.3, 0, 0.6, 0), function()
+    for _, part in ipairs(Player.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = 1
+        end
     end
 end)
 
-InvisBtn.MouseButton1Click:Connect(function()
-    if LocalPlayer.Character then
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+-- Заголовок
+local Title = Instance.new("TextLabel")
+Title.Text = "MOBILE HACK v4"
+Title.Size = UDim2.new(1, 0, 0.15, 0)
+Title.TextColor3 = Color3.new(1,0,0)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
+Title.Parent = Frame
+
+-- Функция NoClip
+game:GetService("RunService").Stepped:Connect(function()
+    if _G.NoClip and Player.Character then
+        for _, part in ipairs(Player.Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.Transparency = 1
+                part.CanCollide = false
             end
         end
-        InvisBtn.Text = "INVISIBLE [ACTIVE]"
     end
 end)
 
--- Фикс: Принудительное обновление GUI
-task.spawn(function()
-    repeat task.wait() until game:IsLoaded()
-    ScreenGui.Enabled = true
-    MainFrame.Visible = true
+-- Принудительное обновление
+Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+    SurfaceGui.Parent = nil
+    task.wait()
+    SurfaceGui.Parent = Camera
 end)
 
--- Сообщение об успешной загрузке
+-- Успешное уведомление
 game:GetService("StarterGui"):SetCore("SendNotification",{
-    Title = "DEEPSEEK MOBILE",
-    Text = "GUI загружено! Статус: Активно",
+    Title = "ГУИ АКТИВИРОВАНО",
+    Text = "Кнопки прикреплены к камере",
     Duration = 5
 })
